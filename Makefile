@@ -3,7 +3,7 @@ BIN_DIR = bin
 DEP_DIR = .deps
 
 CC = g++
-CFLAGS = -g -fsanitize=address -Wall -Wextra -pedantic -std=c++14 -I$(SRC_DIR)
+CFLAGS = -g -fsanitize=address -Wall -Wextra -pedantic -std=c++20 -I$(SRC_DIR)
 LDFLAGS = -lm -fsanitize=address
 DEPFLAGS = -MT $@ -MMD -MP -MF $(DEP_DIR)/$*.d
 
