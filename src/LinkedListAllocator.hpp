@@ -83,12 +83,25 @@ template <std::size_t PageSize = MEGA_BYTE> class LinkedListAllocator
     static Header *find_free(std::size_t size)
     {
         auto *curr = ptr_cast<Header>(page.data());
-        while (curr && (!curr->free || curr->size() < size))
+        while (curr)
         {
+            if (curr->free)
+            {
+                if (size < curr->size())
+                {
+                    return curr;
+                }
+
+                if (curr->next && curr->next->free)
+                {
+                    curr->next = curr->next->next;
+                    continue;
+                }
+            }
             curr = curr->next;
         }
 
-        return curr;
+        return nullptr;
     }
 
     static std::array<char, PageSize> page;
