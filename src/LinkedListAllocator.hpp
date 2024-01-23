@@ -123,3 +123,35 @@ std::array<char, PageSize> LinkedListAllocator<PageSize>::page = std::invoke(
 
         return page_ininitalizer;
     });
+
+template <typename T, std::size_t PageSize = MEGA_BYTE> class LLA
+{
+  public:
+    using value_type = T;
+
+    static T *allocate(std::size_t n)
+    {
+        return static_cast<T *>(
+            LinkedListAllocator<PageSize>::allocate(n * sizeof(T)));
+    }
+
+    static void deallocate(T *p, [[maybe_unused]] std::size_t n = 0) noexcept
+    {
+        LinkedListAllocator<PageSize>::deallocate(p);
+    }
+
+    template <class... Args> static void construct(T *p, Args &&...args)
+    {
+        new (p) T(std::forward<Args>(args)...);
+    }
+
+    static void destroy(T *p)
+    {
+        p->~T();
+    }
+
+    template <typename U> struct rebind
+    {
+        using other = LLA<U, PageSize>;
+    };
+};
