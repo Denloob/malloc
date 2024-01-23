@@ -5,6 +5,10 @@
 #include <iostream>
 #include <vector>
 
+#if 0
+#define USE_LLA
+#endif
+
 int main(int argc, char *argv[])
 {
     using Alloc = LinkedListAllocator<>;
@@ -32,6 +36,11 @@ int main(int argc, char *argv[])
     Alloc::deallocate(b_new);
 
     {
+        // I could not get the allocator traits to work on VisualStudio,
+        //  but they did work with pedantic c++20 g++
+        //  If you have a linux VM, partition, or subsystem, give it a try :D
+
+        #ifdef USE_LLA
         // Now let's use the LLA, LinkedListAllocator wrapper that implements
         //  std::allocator_traits.
         std::vector<int, LLA<int>> v{1, 2, 3, 4, 5};
@@ -44,16 +53,25 @@ int main(int argc, char *argv[])
                   << (void *)v2.data() << '\n';
 
         std::cout << "v.at(2) = " << v.at(2) << '\n';
+        #endif
 
         {
+            #ifdef USE_LLA
             // Let's allocate a large vec, and then free it.
             std::vector<int, LLA<int>> large_vec(200);
+            #else
+            auto large_mem = Alloc::allocate(sizeof(int) * 200);
+            #endif
 
             // Let's check the address of a new int we alloc
             auto i = (int *)Alloc::allocate(sizeof(int));
             std::cout << "i addr (large string allocated) = " << (void *)i
                       << '\n';
             Alloc::deallocate(i);
+
+            #ifndef USE_LLA
+            Alloc::deallocate(large_mem);
+            #endif
         }
 
         // Now when the large string was freed, what will be the address of an int?
