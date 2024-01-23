@@ -56,6 +56,22 @@ template <std::size_t PageSize = MEGA_BYTE> class LinkedListAllocator
         header->free = true;
     }
 
+#ifdef DEBUG
+    static bool check_memory_leaks()
+    {
+        auto *curr = ptr_cast<Header>(page.data());
+        while (curr)
+        {
+            if (!curr->free)
+            {
+                return true;
+            }
+            curr = curr->next;
+        }
+        return false;
+    }
+#endif
+
   private:
     template <typename T> static constexpr T *ptr_cast(void *ptr)
     {
